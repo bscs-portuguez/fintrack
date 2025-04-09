@@ -1,9 +1,35 @@
 from django.contrib.auth import logout
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
 from .forms import RegistrationForm
 from django.contrib import messages
+from django.http import JsonResponse
+from .models import DynamicRow
+import json
+
+def index(request):
+    rows = DynamicRow.objects.all()
+    all_columns = set()
+    for row in rows:
+        all_columns.update(row.data.keys())
+    all_columns = sorted(list(all_columns))
+    return render(request, 'dynamic_table.html', {
+        'rows': rows,
+        'columns': all_columns,
+    })
+
+def update_row(request, row_id):
+    if request.method == 'POST':
+        row = get_object_or_404(DynamicRow, id=row_id)
+        new_data = {}
+        for key in request.POST:
+            if key.startswith('col_'):
+                col_name = key[4:]
+                new_data[col_name] = request.POST[key]
+        row.data = new_data
+        row.save()
+        return JsonResponse({'success': True})
 
 # Logout view
 def logout_view(request):
