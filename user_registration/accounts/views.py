@@ -41,3 +41,6 @@ def login_view(request):
 # Welcome page after login
 def welcome(request):
     return render(request, 'welcome.html')
+
+def encode(request):
+    return render(request, 'encode.html')
